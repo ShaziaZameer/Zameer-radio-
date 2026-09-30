@@ -1,4 +1,4 @@
-name: Verify mood queues and build Android 4.6
+name: Verify Smart Volume and build Android 4.7
 on:
   push:
     branches: [fix/mood-queue-navigation-45]
@@ -11,14 +11,14 @@ jobs:
     timeout-minutes: 25
     defaults:
       run:
-        working-directory: source46
+        working-directory: source47
     steps:
       - uses: actions/checkout@v4
       - name: Extract approved versioned source
         working-directory: .
         run: |
-          sha256sum -c source-4.6.sha256
-          unzip -q source-4.6.zip -d source46
+          sha256sum -c source-4.7.sha256
+          unzip -q source-4.7.zip -d source47
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -36,15 +36,19 @@ jobs:
           mkdir -p /tmp/native45
           javac -d /tmp/native45 app/src/main/java/com/zameer/radio/RadioMatch.java app/src/main/java/com/zameer/radio/RadioQueueHistory.java tests/RadioMood45Test.java
           java -cp /tmp/native45 com.zameer.radio.RadioMood45Test
-      - name: Live stream checks
-        run: |
-          if ! command -v ffprobe >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
-          python tests/check46-poems.py
+          javac -d /tmp/native45 app/src/main/java/com/zameer/radio/SmartBufferPolicy.java app/src/main/java/com/zameer/radio/BufferWatchdog.java app/src/main/java/com/zameer/radio/NetworkHandoverPolicy.java tests/RadioStartup47Test.java tests/SmartBuffer334Test.java tests/SmartStreaming40Test.java
+          java -cp /tmp/native45 com.zameer.radio.RadioStartup47Test
+          java -cp /tmp/native45 com.zameer.radio.SmartBuffer334Test
+          java -cp /tmp/native45 com.zameer.radio.SmartStreaming40Test
+          javac -d /tmp/native45 app/src/main/java/com/zameer/radio/SmartSoundProfile.java tests/SmartSound334Test.java
+          java -cp /tmp/native45 com.zameer.radio.SmartSound334Test
+          javac -d /tmp/native45 app/src/main/java/com/zameer/radio/SmartVolumeEngine.java tests/SmartVolume47Test.java
+          java -cp /tmp/native45 com.zameer.radio.SmartVolume47Test
       - name: Browser checks
         run: |
           npm install --no-save playwright@1.62.1
           npx playwright install --with-deps chromium
-          node tests/poetry46-ui.cjs
+          node tests/player47-ui.cjs
       - name: Install Android SDK
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
@@ -53,19 +57,21 @@ jobs:
         with:
           gradle-version: '8.13'
       - name: Build release and lint
-        run: gradle :app:assembleRelease :app:bundleRelease :app:lintRelease --no-daemon
+        run: gradle :app:testReleaseUnitTest :app:assembleRelease :app:bundleRelease :app:lintRelease --no-daemon
       - name: Collect signing verifier
-        run: cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" qa/4.6/apksigner.jar
+        run: cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" qa/4.7/apksigner.jar
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: zameer-radio-46-verification
+          name: zameer-radio-47-verification
           path: |
-            source46/qa/4.6/
-            source46/app/build/reports/lint-results-release.*
+            source47/qa/4.7/
+            source47/app/build/reports/lint-results-release.*
+            source47/app/build/reports/tests/testReleaseUnitTest/
+            source47/app/build/test-results/testReleaseUnitTest/
       - uses: actions/upload-artifact@v4
         with:
-          name: zameer-radio-46-unsigned
+          name: zameer-radio-47-unsigned
           path: |
-            source46/app/build/outputs/apk/release/*.apk
-            source46/app/build/outputs/bundle/release/*.aab
+            source47/app/build/outputs/apk/release/*.apk
+            source47/app/build/outputs/bundle/release/*.aab
