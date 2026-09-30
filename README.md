@@ -4,6 +4,8 @@ The authoritative Android build source is `source-4.6.zip`, verified with `sourc
 
 Version 4.6 / code 46 retains the strict mood queues, cyclic Next/Previous and distinct calm streams from 4.5, and adds six selected recorded Hindi poems from the publisher’s public **Pratidin Ek Kavita / Nayi Dhara Radio** podcast feed. Audio remains hosted by the publisher. The UI clearly labels recordings, credits poets and the publisher, links the original episodes, and supports Next/Previous and seeking. These recordings never enter live-radio recommendations or station favorites.
 
+The app volume now shows a percentage, synchronizes the saved level with native playback at startup and includes a Set to 100% control. New installs use 100% app gain; saved listener choices and the phone media volume are respected.
+
 Publisher: https://pratidinekkavita.transistor.fm/
 Public feed: https://feeds.transistor.fm/pratidin-ek-kavita
 
