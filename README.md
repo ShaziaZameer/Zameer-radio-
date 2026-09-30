@@ -1,14 +1,21 @@
-# Zameer Radio • AI 4.6
+# Zameer Radio • AI 4.7
 
-The authoritative Android build source is `source-4.6.zip`, verified with `source-4.6.sha256`. GitHub Actions extracts it into `source46`, runs the checks and builds APK/AAB files. Existing loose files and the 4.5 ZIP are historical snapshots.
+The authoritative Android source is `source-4.7.zip`, checked against `source-4.7.sha256` and built by GitHub Actions. Earlier snapshots remain historical.
 
-Version 4.6 / code 46 retains the strict mood queues, cyclic Next/Previous and distinct calm streams from 4.5, and adds six selected recorded Hindi poems from the publisher’s public **Pratidin Ek Kavita / Nayi Dhara Radio** podcast feed. Audio remains hosted by the publisher. The UI clearly labels recordings, credits poets and the publisher, links the original episodes, and supports Next/Previous and seeking. These recordings never enter live-radio recommendations or station favorites.
+## Smart Volume
 
-The app volume now shows a percentage, synchronizes the saved level with native playback at startup and includes a Set to 100% control. New installs use 100% app gain; saved listener choices and the phone media volume are respected.
+Smart Volume is enabled by default for live radio, with a saved on/off setting in Hindi and English. It slowly raises quiet programmes by at most 6 dB, lowers loud programmes, and uses a stereo-linked look-ahead peak limiter. A low-level gate avoids boosting near-silence. Recorded poetry and local audio bypass levelling. Unsupported PCM formats also bypass it, with a visible status. Turning it off preserves the original decoded PCM bytes.
 
-Publisher: https://pratidinekkavita.transistor.fm/
-Public feed: https://feeds.transistor.fm/pratidin-ek-kavita
+This is conservative RMS levelling, not a broadcast LUFS normalizer. It cannot repair a distorted source or make extremely quiet stations exactly as loud as every other station. Gain changes affect dynamics intentionally; there is no resampling, codec conversion, bitrate reduction or change to the existing Smart Sound tone profiles. Its internal audio buffer holds at most about 20 ms.
 
-No signing credentials are stored in this repository. Release artifacts from Actions are unsigned; signing is performed privately with the existing app upload key.
+## Startup
 
-Tests: core radio/mood checks, native queue checks, recorded-poetry filtering and attribution, Chromium UI navigation/seek/label checks, six official-feed/audio checks, and Android release lint. Physical Android playback still needs device testing.
+The initial live-radio audio cushion falls from 2.5 to 1.5 seconds. Actual startup still depends on the station server, connection and stream format. The forward buffer and 8–20 second adaptive stall-recovery cushion remain in place. Recordings and local audio keep their existing startup behavior. All 4.6 mood, navigation, recorded-poetry and saved-volume improvements are retained.
+
+## Verification
+
+Locally passed: 54 synthetic-audio checks covering bounded gain, peak protection, unchanged silence, stereo balance, arbitrary decoder chunks, duration preservation and exact disabled bypass. Startup, buffering, network handover, tone profile and mood/recording regression checks are included.
+
+The workflow additionally runs the real Media3 processor lifecycle unit tests, Chromium UI checks, Android release builds and lint. Consult the workflow result for their status. Physical-device listening and real-station startup measurements are still required before judging perceived sound quality or publishing this release.
+
+Signing is private using the existing upload key. No signing credentials are in this repository.
