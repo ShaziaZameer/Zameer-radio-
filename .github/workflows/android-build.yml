@@ -1,28 +1,70 @@
-name: Build Android bundle
+name: Verify mood queues and build Android 4.5
 on:
   push:
-    branches: [main]
+    branches: [fix/mood-queue-navigation-45]
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: source45
     steps:
       - uses: actions/checkout@v4
+      - name: Extract approved versioned source
+        working-directory: .
+        run: |
+          sha256sum -c source-4.5.sha256
+          unzip -q source-4.5.zip -d source45
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - run: |
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
-      - run: |
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Core and native regression checks
+        run: |
+          node --check app/src/main/assets/app.js
+          node --check app/src/main/assets/now-playing.js
+          node tests/mood45-core.cjs
+          node tests/mahfil44-core.cjs
+          mkdir -p /tmp/native45
+          javac -d /tmp/native45 app/src/main/java/com/zameer/radio/RadioMatch.java app/src/main/java/com/zameer/radio/RadioQueueHistory.java tests/RadioMood45Test.java
+          java -cp /tmp/native45 com.zameer.radio.RadioMood45Test
+      - name: Live stream checks
+        run: |
+          if ! command -v ffprobe >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
+          python tests/check45-streams.py
+      - name: Browser checks
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+          node tests/mood-queue45-ui.cjs
+      - name: Install Android SDK
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;35.0.0"
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
-      - run: gradle :app:bundleRelease --no-daemon
+      - name: Build release and lint
+        run: gradle :app:assembleRelease :app:bundleRelease :app:lintRelease --no-daemon
+      - name: Collect signing verifier
+        run: cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" qa/4.5/apksigner.jar
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zameer-radio-45-verification
+          path: |
+            source45/qa/4.5/
+            source45/app/build/reports/lint-results-release.*
       - uses: actions/upload-artifact@v4
         with:
-          name: zameer-radio-unsigned-aab
-          path: app/build/outputs/bundle/release/*.aab
+          name: zameer-radio-45-unsigned
+          path: |
+            source45/app/build/outputs/apk/release/*.apk
+            source45/app/build/outputs/bundle/release/*.aab
