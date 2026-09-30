@@ -1,11 +1,12 @@
-# Zameer Radio 4.5 — mood queue fixes
+# Zameer Radio • AI 4.6
 
-The complete 4.5 build source is in `source-4.5.zip` (checksum: `source-4.5.sha256`). It includes native Android code, bundled web UI, station catalogue, font licences and regression checks. The older loose `app/` directory belongs to the historical initial wrapper; the workflow builds only the extracted 4.5 archive in `source45/`.
+The authoritative Android build source is `source-4.6.zip`, verified with `source-4.6.sha256`. GitHub Actions extracts it into `source46`, runs the checks and builds APK/AAB files. Existing loose files and the 4.5 ZIP are historical snapshots.
 
-Changes: strict mood filtering; matching list/queue counts; separate manual scheduled-programme choices; cyclic Next/Previous; Previous in the expanded player; no stale playback on an empty mood; Rangoli removed from Hindi Kavita; two publisher-documented ambient streams for Calm. No verified continuous Hindi Kavita stream was found, so unrelated music is not substituted.
+Version 4.6 / code 46 retains the strict mood queues, cyclic Next/Previous and distinct calm streams from 4.5, and adds six selected recorded Hindi poems from the publisher’s public **Pratidin Ek Kavita / Nayi Dhara Radio** podcast feed. Audio remains hosted by the publisher. The UI clearly labels recordings, credits poets and the publisher, links the original episodes, and supports Next/Previous and seeking. These recordings never enter live-radio recommendations or station favorites.
 
-Local core/native regression checks pass. Browser tests, live stream codec probes, release build and lint run in Actions. A green workflow is required before release; physical-device and actual programme-content checks remain separate. No signing credentials are included.
+Publisher: https://pratidinekkavita.transistor.fm/
+Public feed: https://feeds.transistor.fm/pratidin-ek-kavita
 
-To build locally: verify the checksum, unzip into an empty directory, then run Gradle 8.13 with JDK 17 and Android SDK 36. Tests: `node tests/mood45-core.cjs`, `node tests/mahfil44-core.cjs`, `node tests/mood-queue45-ui.cjs` (Playwright Chromium required).
+No signing credentials are stored in this repository. Release artifacts from Actions are unsigned; signing is performed privately with the existing app upload key.
 
-Public publication of this source was explicitly authorized by the owner on 30 September 2026. Original code remains copyright Zameer Ahmad; see `COPYRIGHT.txt` inside the source. Third-party licences and broadcaster rights remain unchanged.
+Tests: core radio/mood checks, native queue checks, recorded-poetry filtering and attribution, Chromium UI navigation/seek/label checks, six official-feed/audio checks, and Android release lint. Physical Android playback still needs device testing.
