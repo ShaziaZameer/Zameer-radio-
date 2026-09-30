@@ -1,14 +1,11 @@
-# Zameer Radio for Android
+# Zameer Radio 4.5 — mood queue fixes
 
-Android Studio project wrapping the bundled Zameer Radio interface. The directory of stations is fetched live from Radio Browser; audio is streamed from third-party stations. INTERNET is the only requested Android permission. Favorites are stored on the device.
+The complete 4.5 build source is in `source-4.5.zip` (checksum: `source-4.5.sha256`). It includes native Android code, bundled web UI, station catalogue, font licences and regression checks. The older loose `app/` directory belongs to the historical initial wrapper; the workflow builds only the extracted 4.5 archive in `source45/`.
 
-## Build
-Open this directory in Android Studio with JDK 17 and Android SDK 36. Sync Gradle (AGP 8.13.2, Gradle 8.13 or newer). Test on a physical Android device with mobile data and Wi-Fi. Generate a signed Android App Bundle using Build > Generate Signed Bundle / APK. Keep the upload key private. The application ID `com.zameer.radio` must be confirmed before the first Play upload because it cannot be changed for the listing.
+Changes: strict mood filtering; matching list/queue counts; separate manual scheduled-programme choices; cyclic Next/Previous; Previous in the expanded player; no stale playback on an empty mood; Rangoli removed from Hindi Kavita; two publisher-documented ambient streams for Calm. No verified continuous Hindi Kavita stream was found, so unrelated music is not substituted.
 
-## Release checklist
-- Verify station directory fetch and HTTPS audio playback on devices, including pause/resume and network errors. This wrapper does not implement background playback, media notification, or lock-screen controls.
-- Create and host a public privacy policy that accurately describes Radio Browser API queries, station stream connections, local favorites, and any further analytics or hosting introduced later.
-- Complete Play Console data safety, content rating, target audience, store listing, screenshots, and contact details honestly.
-- Upload the signed AAB to internal or closed testing. New personal developer accounts must complete Google's closed-testing requirement before production access.
+Local core/native regression checks pass. Browser tests, live stream codec probes, release build and lint run in Actions. A green workflow is required before release; physical-device and actual programme-content checks remain separate. No signing credentials are included.
 
-This project has not been compiled or device tested in this environment, which lacks Android SDK/Gradle. Do not submit it to production without those checks.
+To build locally: verify the checksum, unzip into an empty directory, then run Gradle 8.13 with JDK 17 and Android SDK 36. Tests: `node tests/mood45-core.cjs`, `node tests/mahfil44-core.cjs`, `node tests/mood-queue45-ui.cjs` (Playwright Chromium required).
+
+Public publication of this source was explicitly authorized by the owner on 30 September 2026. Original code remains copyright Zameer Ahmad; see `COPYRIGHT.txt` inside the source. Third-party licences and broadcaster rights remain unchanged.
